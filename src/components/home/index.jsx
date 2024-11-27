@@ -1,4 +1,4 @@
-import {useReducer, useRef, useState} from "react";
+import {useEffect, useReducer, useRef, useState} from "react";
 import {AiOutlineDelete} from "react-icons/ai";
 import {FaEdit} from "react-icons/fa";
 import {Modal, Button} from "antd";
@@ -27,6 +27,12 @@ function HomeComponent() {
 					...state,
 					texts: state.texts.map((value) =>
 						value.id === action.id ? {...value, text: action.text} : value
+					),
+				};
+			case `search`:
+				return {
+					texts: action.allTexts.texts.filter((value) =>
+						value.text.includes(action.searched)
 					),
 				};
 			default:
@@ -61,7 +67,7 @@ function HomeComponent() {
 			id: idx,
 		});
 	};
-
+	// ------------------------------------------
 	const showModal = (item) => {
 		setEditingItem(item);
 	};
@@ -76,18 +82,28 @@ function HomeComponent() {
 		}
 		setEditingItem(null);
 	};
-
 	const handleCancel = () => {
 		setEditingItem(null);
 	};
-
 	let editRefInput = useRef(null);
+	// ------------------------------------------
+	let searchRefInput = useRef(null);
+
+	let searchFunc = () => {
+		dispatch({
+			type: `search`,
+			searched: searchRefInput.current?.value || "",
+			allTexts: initialState,
+		});
+	};
 
 	return (
 		<div className="flex flex-col items-center justify-start min-w-full min-h-screen pt-[6em] bg-gray-100">
 			<div className="w-full max-w-xl px-4 py-6 bg-white border rounded-md shadow-md">
 				<h1 className="mb-6 text-4xl font-bold text-center">To Do List</h1>
 				<input
+					ref={searchRefInput}
+					onChange={searchFunc}
 					type="text"
 					placeholder="Search"
 					className="w-full px-4 py-2 mb-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
