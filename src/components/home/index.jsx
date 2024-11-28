@@ -1,4 +1,4 @@
-import {useEffect, useReducer, useRef, useState} from "react";
+import {act, useEffect, useReducer, useRef, useState} from "react";
 import {AiOutlineDelete} from "react-icons/ai";
 import {FaEdit} from "react-icons/fa";
 import {Modal, Button} from "antd";
@@ -7,27 +7,31 @@ function HomeComponent() {
 	let reducer = (state, action) => {
 		switch (action.type) {
 			case `add`:
+				let newText = {
+					text: action.text,
+					id: Date.now(),
+				};
+				let updatedText = [...state.texts, newText];
+				localStorage.setItem(`dataText`, JSON.stringify(updatedText));
 				return {
 					...state,
-					texts: [
-						...state.texts,
-						{
-							text: action.text,
-							id: Date.now(),
-						},
-					],
+					texts: updatedText,
 				};
 			case `delete`:
+				let deletedText = state.texts.filter((value) => value.id !== action.id);
+				localStorage.setItem(`dataText`, JSON.stringify(deletedText));
 				return {
 					...state,
-					texts: state.texts.filter((value) => value.id !== action.id),
+					texts: deletedText,
 				};
 			case `edit`:
+				let editedTexts = state.texts.map((value) =>
+					value.id === action.id ? {...value, text: action.text} : value
+				);
+				localStorage.setItem("dataText", JSON.stringify(editedTexts));
 				return {
 					...state,
-					texts: state.texts.map((value) =>
-						value.id === action.id ? {...value, text: action.text} : value
-					),
+					texts: editedTexts,
 				};
 			case `search`:
 				return {
@@ -42,10 +46,7 @@ function HomeComponent() {
 
 	let addRefInput = useRef(null);
 	let initialState = {
-		texts: [
-			{text: `text 1`, id: 1},
-			{text: `text 2`, id: 2},
-		],
+		texts: JSON.parse(localStorage.getItem(`dataText`)) || [],
 	};
 
 	let [state, dispatch] = useReducer(reducer, initialState);
